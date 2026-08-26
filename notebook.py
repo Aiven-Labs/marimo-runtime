@@ -43,5 +43,18 @@ def __(mo, n):
     return
 
 
+@app.cell
+def __(mo):
+    mo.md(
+        """
+        ---
+        This is your own private, editable copy — nothing you change here
+        affects anyone else. Get the template that made it:
+        [github.com/Aiven-Labs/marimo-runtime](https://github.com/Aiven-Labs/marimo-runtime).
+        """
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()

@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # the html-wasm export below -- not needed at runtime.
 RUN pip install --no-cache-dir uv
 
-COPY notebook.py export_notebooks.py .
+COPY *.py .
 
 # Export to self-contained WASM build(s) at image-build time, not at
 # container start. Each visitor's browser then runs its own private
@@ -18,10 +18,10 @@ COPY notebook.py export_notebooks.py .
 # edits, and no arbitrary code ever executes on this container.
 #
 # export_notebooks.py exports every *.py notebook sitting in this
-# directory (just notebook.py by default) -- drop in more notebook
-# files and they're picked up automatically, each getting its own WASM
-# build plus a plain links page to move between them (see that script
-# for why: marimo has no built-in cross-notebook navigation for WASM).
+# directory -- drop in more notebook files (COPY *.py above picks them
+# up too) and they're each built automatically, plus a plain links page
+# to move between them (see that script for why: marimo has no
+# built-in cross-notebook navigation for WASM).
 RUN python export_notebooks.py
 
 # Serve with nginx instead of Python's http.server: the exported bundle

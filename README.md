@@ -28,8 +28,10 @@ files. Each visitor's browser then runs its own [Pyodide](https://pyodide.org)
 
 ## What's here
 
-- `notebook.py` — a placeholder marimo notebook. Replace it with your own,
-  or drop in more (see [Multiple notebooks](#multiple-notebooks)).
+- `notebook.py` — a placeholder marimo notebook. Replace it with your own.
+- `temperature_converter.py` — a second, unrelated notebook, here to
+  demo [Multiple notebooks](#multiple-notebooks) below rather than to be
+  useful on its own. Delete it if you only want the one notebook.
 - `export_notebooks.py` — finds every notebook in this directory and
   exports each to WASM at build time; see below.
 - `Dockerfile` — runs `export_notebooks.py` at build time, then a
@@ -63,9 +65,10 @@ afterward. `marimo edit notebook.py` locally is the fastest way to check.
 
 ## Multiple notebooks
 
-Drop another `.py` notebook into this directory (or `examples/postgres-persistence/`)
-and it's picked up automatically — `export_notebooks.py` finds every file
-that defines `marimo.App(...)`, no Dockerfile edit needed.
+`temperature_converter.py` is here to demonstrate this: drop another
+`.py` notebook into this directory (or `examples/postgres-persistence/`)
+and it's picked up automatically — `export_notebooks.py` finds every
+file that defines `marimo.App(...)`, no Dockerfile edit needed.
 
 marimo doesn't have a built-in way to navigate between separate WASM
 exports — each one is a fully self-contained Pyodide bundle with no

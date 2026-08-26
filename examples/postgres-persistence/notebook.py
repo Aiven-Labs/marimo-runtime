@@ -11,7 +11,7 @@ def __():
     return (mo,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def __(mo):
     mo.md(
         """
@@ -122,7 +122,7 @@ async def __(mo, save_status, session_id):
     return (history_rows,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def __(mo, session_id):
     mo.md(
         f"""

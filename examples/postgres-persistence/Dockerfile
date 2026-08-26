@@ -8,19 +8,21 @@ RUN pip install --no-cache-dir -r requirements.txt
 # the html-wasm export below -- not needed at runtime.
 RUN pip install --no-cache-dir uv
 
-COPY notebook.py session_state.py export_notebooks.py .
+COPY *.py .
 
 # Same per-visitor WASM export as the root template: no shared server-side
 # kernel ever runs a notebook's Python, so nothing here can execute
-# arbitrary code against the database. Only api.py (below) touches Postgres.
+# arbitrary code against the database. Only api.py (below) touches Postgres
+# (and isn't itself a notebook, so export_notebooks.py skips it).
 #
 # export_notebooks.py exports every *.py notebook sitting in this
-# directory (just notebook.py by default) -- drop in more notebook files
-# and they're picked up automatically, each getting its own WASM build
-# plus a plain links page to move between them. All of them share this
-# same api.py bridge and Postgres service (state is keyed by a random
-# per-browser id, not by notebook), so no extra wiring is needed per
-# notebook.
+# directory -- drop in more notebook files and they're picked up
+# automatically, each getting its own WASM build plus a plain links page
+# to move between them. All of them share this same api.py bridge and
+# Postgres service (state is keyed by a random per-browser id, not by
+# notebook), so no extra wiring is needed per notebook -- though a
+# notebook doesn't have to use session_state.py at all (see
+# tip_calculator.py).
 RUN python export_notebooks.py
 
 # Runtime stage needs both nginx (serving the static WASM site) and Python

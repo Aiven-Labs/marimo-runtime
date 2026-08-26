@@ -109,21 +109,29 @@ deploying straight from this repo.
 
 ## Multiple notebooks
 
-Drop another `.py` notebook into this directory and it's exported
-automatically alongside `notebook.py` — see the root template's
+`tip_calculator.py` is here to demonstrate this: drop another `.py`
+notebook into this directory and it's exported automatically alongside
+`notebook.py` — see the root template's
 [Multiple notebooks](../../README.md#multiple-notebooks) section for how
 `export_notebooks.py` discovers and builds them, and why more than one
 notebook gets a plain links page instead of in-app navigation (marimo
 has none, for WASM exports).
 
-All notebooks here share this same `api.py` bridge and Postgres service
-— state is keyed by the random per-browser id in `localStorage`, not by
-notebook, so nothing extra needs wiring up per notebook.
+`tip_calculator.py` deliberately doesn't use `session_state.py` or
+`api.py` at all — notebooks here don't have to share the persistence
+backend to coexist in the same deployment. The ones that do (just
+`notebook.py`, for now) share the same `api.py` bridge and Postgres
+service — state is keyed by the random per-browser id in `localStorage`,
+not by notebook, so nothing extra needs wiring up per notebook.
 
 ## Files
 
 - `notebook.py` — the marimo notebook, exported to WASM. Just the
   widgets and narrative; calls into `session_state.py` to load/save state.
+- `tip_calculator.py` — a second, unrelated notebook with no Postgres
+  dependency, here to demo [Multiple notebooks](#multiple-notebooks)
+  above rather than to be useful on its own. Delete it if you only want
+  the one notebook.
 - `session_state.py` — the session id and the `api.py` client calls,
   kept separate from the notebook rather than written inside it. marimo
   bundles it into the WASM export automatically as a local dependency.

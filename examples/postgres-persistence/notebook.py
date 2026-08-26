@@ -7,15 +7,8 @@ app = marimo.App(width="medium", app_title="marimo + Aiven for PostgreSQL")
 @app.cell(hide_code=True)
 def __():
     import marimo as mo
-    import sys
-    import os
-    import json
-    import uuid
 
-    # Pyodide (the Python-in-WASM runtime this notebook exports to) reports
-    # "emscripten" here; a normal `marimo edit` process reports the real OS.
-    IN_BROWSER = sys.platform == "emscripten"
-    return IN_BROWSER, json, mo, os, sys, uuid
+    return (mo,)
 
 
 @app.cell
@@ -40,83 +33,28 @@ def __(mo):
 
 
 @app.cell(hide_code=True)
-def __(IN_BROWSER, os, uuid):
-    if IN_BROWSER:
-        import js
+def __():
+    # session_state.py lives next to this notebook, not inside it -- see
+    # that file for the session id and the Postgres load/save/history
+    # calls it wraps. marimo's WASM export bundles it automatically.
+    from session_state import get_or_create_session_id
 
-        session_id = js.window.localStorage.getItem("marimo_session_id")
-        if not session_id:
-            session_id = str(uuid.uuid4())
-            js.window.localStorage.setItem("marimo_session_id", session_id)
-    else:
-        # Local (non-WASM) preview has no browser localStorage to persist
-        # to -- reuse a fixed id across runs instead.
-        session_id = os.environ.get("MARIMO_LOCAL_SESSION_ID", "local-preview")
+    session_id = get_or_create_session_id()
     return (session_id,)
 
 
 @app.cell(hide_code=True)
-def __(IN_BROWSER, json):
-    # Pyodide can't open a raw TCP socket, so the notebook never talks to
-    # Postgres directly -- it calls this same container's bundled API over
-    # plain HTTP (relative paths, so it works at whatever domain this is
-    # deployed to). Locally, outside Pyodide, fall back to urllib against
-    # that same API running on 127.0.0.1:8000.
-    async def api_get(path: str):
-        if IN_BROWSER:
-            import pyodide.http
+async def __(session_id):
+    from session_state import load_state
 
-            response = await pyodide.http.pyfetch(path)
-            return await response.json()
-        else:
-            import urllib.request
-
-            with urllib.request.urlopen("http://127.0.0.1:8000" + path) as resp:
-                return json.load(resp)
-
-    async def api_post(path: str, payload: dict):
-        body = json.dumps(payload)
-        if IN_BROWSER:
-            import pyodide.http
-
-            response = await pyodide.http.pyfetch(
-                path,
-                method="POST",
-                headers={"Content-Type": "application/json"},
-                body=body,
-            )
-            return await response.json()
-        else:
-            import urllib.request
-
-            req = urllib.request.Request(
-                "http://127.0.0.1:8000" + path,
-                data=body.encode(),
-                headers={"Content-Type": "application/json"},
-                method="POST",
-            )
-            with urllib.request.urlopen(req) as resp:
-                return json.load(resp)
-
-    return api_get, api_post
-
-
-@app.cell(hide_code=True)
-async def __(api_get, session_id):
-    # The one and only load from Postgres, at notebook startup.
     _default = {
         "favorite_number": 5,
         "favorite_color": "Teal",
         "visitor_name": "",
         "subscribe_updates": False,
     }
-    try:
-        _response = await api_get(f"/api/state/{session_id}")
-        saved_state = _response.get("value") or _default
-    except Exception:
-        # API not reachable (e.g. this local preview isn't running api.py
-        # too) -- fall back to defaults so the notebook still works.
-        saved_state = _default
+    # The one and only load from Postgres, at notebook startup.
+    saved_state = await load_state(session_id, _default)
     return (saved_state,)
 
 
@@ -141,7 +79,6 @@ def __(mo, saved_state):
 
 @app.cell(hide_code=True)
 async def __(
-    api_post,
     favorite_color,
     favorite_number,
     mo,
@@ -149,34 +86,30 @@ async def __(
     subscribe_updates,
     visitor_name,
 ):
+    from session_state import save_state
+
     # Reruns automatically whenever a widget above changes (marimo's
-    # reactive execution), and persists the new value through the bundled
-    # API rather than talking to Postgres directly.
+    # reactive execution), and persists the new value through
+    # session_state rather than talking to Postgres directly.
     current_value = {
         "favorite_number": favorite_number.value,
         "favorite_color": favorite_color.value,
         "visitor_name": visitor_name.value,
         "subscribe_updates": subscribe_updates.value,
     }
-    try:
-        await api_post(f"/api/state/{session_id}", {"value": current_value})
-        save_status = "Saved to Postgres"
-    except Exception as _exc:
-        save_status = f"Not saved -- API unreachable ({_exc})"
+    save_status = await save_state(session_id, current_value)
 
     mo.md(f"**{save_status}**: `{current_value}`")
     return current_value, save_status
 
 
 @app.cell(hide_code=True)
-async def __(api_get, mo, save_status, session_id):
+async def __(mo, save_status, session_id):
+    from session_state import load_history
+
     # Depends on save_status purely so this cell reruns after each save
     # above and shows the freshest history straight from the database.
-    try:
-        _response = await api_get(f"/api/history/{session_id}")
-        history_rows = _response.get("history", [])
-    except Exception:
-        history_rows = []
+    history_rows = await load_history(session_id)
 
     mo.vstack(
         [

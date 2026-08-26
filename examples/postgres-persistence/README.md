@@ -10,7 +10,10 @@ of only living in a Python process.
 
 Like the root template, `notebook.py` here exports to WASM — every
 visitor's browser runs its own private [Pyodide](https://pyodide.org)
-(Python-in-WebAssembly) instance. On top of that:
+(Python-in-WebAssembly) instance. All of the session-id and Postgres
+plumbing that makes that work lives in `session_state.py`, not in
+`notebook.py` itself — see [Why there's a bundled API](#why-theres-a-bundled-api).
+On top of that:
 
 1. On first visit, the notebook generates a random id and stores it in
    *your browser's* `localStorage`. No login — "this browser" is the
@@ -48,6 +51,16 @@ server. All notebook code still executes client-side, in each visitor's
 own Pyodide sandbox — `api.py` is just a narrow, fixed-behavior data
 bridge.
 
+The client side of that bridge — generating the session id, and the
+`GET`/`POST` calls to `api.py` — lives in `session_state.py`, a plain
+module imported by `notebook.py` rather than code written inside it.
+marimo's WASM export resolves that import automatically: it builds
+`session_state.py` into a wheel and embeds it as a dependency at export
+time, the same way it would handle a PyPI package, so nothing extra is
+needed for it to work in the browser. `notebook.py` ends up only
+containing the widgets and the calls to `session_state`'s functions —
+not the mechanism itself.
+
 One Aiven Application, one container, one deploy — same as the root
 template.
 
@@ -71,10 +84,10 @@ works well); `api.py` creates `app_state` and `state_history` itself on
 first run (see `schema.sql` if you'd rather apply it by hand).
 
 You can also just run `marimo edit notebook.py` for fast iteration on
-the notebook itself — outside Pyodide it falls back to plain
-`urllib.request` against `api.py` on `127.0.0.1:8000`, so start `api.py`
-first if you want the save/load calls to succeed rather than silently
-falling back to defaults.
+the notebook itself — outside Pyodide, `session_state.py` falls back to
+plain `urllib.request` against `api.py` on `127.0.0.1:8000`, so start
+`api.py` first if you want the save/load calls to succeed rather than
+silently falling back to defaults.
 
 ## Deploying as an Aiven Application
 
@@ -109,8 +122,11 @@ notebook, so nothing extra needs wiring up per notebook.
 
 ## Files
 
-- `notebook.py` — the marimo notebook, exported to WASM. Generates the
-  per-browser id and calls the bundled API to load/save state.
+- `notebook.py` — the marimo notebook, exported to WASM. Just the
+  widgets and narrative; calls into `session_state.py` to load/save state.
+- `session_state.py` — the session id and the `api.py` client calls,
+  kept separate from the notebook rather than written inside it. marimo
+  bundles it into the WASM export automatically as a local dependency.
 - `export_notebooks.py` — finds every notebook in this directory and
   exports each to WASM at build time (same script as the root template).
 - `api.py` — the internal API bridging Pyodide to Postgres.

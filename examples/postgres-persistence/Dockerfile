@@ -8,7 +8,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # the html-wasm export below -- not needed at runtime.
 RUN pip install --no-cache-dir uv
 
-COPY notebook.py export_notebooks.py .
+COPY notebook.py session_state.py export_notebooks.py .
 
 # Same per-visitor WASM export as the root template: no shared server-side
 # kernel ever runs a notebook's Python, so nothing here can execute

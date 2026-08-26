@@ -90,9 +90,9 @@ for this template.
 
 ## Other examples
 
-- `examples/postgres-persistence/` — a single shared, server-backed
-  notebook (via `marimo edit`/`marimo run`, not WASM) whose widget state
-  and change history persist to a real **Aiven for PostgreSQL** service.
-  Unlike the root template, all visitors share one notebook instance —
-  useful if you want state to survive restarts rather than isolating
-  each visitor.
+- `examples/postgres-persistence/` — same per-visitor WASM isolation as
+  this root template, plus real persistence: each visitor's widgets are
+  saved to a real **Aiven for PostgreSQL** service, keyed by an
+  anonymous id stored in their browser, and reload exactly where they
+  left off. A tiny bundled API bridges the browser-side notebook to
+  Postgres (Pyodide can't open a raw database connection itself).

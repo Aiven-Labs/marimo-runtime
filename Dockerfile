@@ -4,6 +4,9 @@ WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+# uv is a build-time-only tool marimo needs to resolve dependencies for
+# the html-wasm export below -- not needed at runtime.
+RUN pip install --no-cache-dir uv
 
 COPY notebook.py .
 

@@ -20,6 +20,21 @@ Restart the notebook (or `marimo edit` again after quitting) and the
 widgets reload their last saved values from Postgres — proving the
 state lives in the database, not in the Python process.
 
+## Why this one needs a password, and the root template doesn't
+
+The root template exports to WASM: every visitor's browser runs its own
+Pyodide (Python-in-WebAssembly) instance, so no code ever executes on
+the server, and there's nothing sensitive there to protect.
+
+This example can't do that — persisting to Postgres means a real
+Python process on a real machine holding a real database connection.
+`app.py` here runs as an actual `marimo edit` server, which means
+anyone who reaches the URL can execute arbitrary Python (and, through
+it, touch the database `DATABASE_URL` points at). That's the trade-off
+of shared, persistent state versus WASM's per-visitor isolation: this
+one needs `MARIMO_TOKEN_PASSWORD` as a real access control, not an
+optional nicety.
+
 ## Run it locally
 
 ```bash

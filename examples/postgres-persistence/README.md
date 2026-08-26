@@ -22,8 +22,9 @@ On top of that:
    a small bundled API — see below), and uses it as the widgets'
    initial values.
 3. Every widget change is sent to that same API, which upserts it into
-   an `app_state` table (keyed by your browser id) and appends a row to
-   a `state_history` audit table.
+   an `app_state` table (keyed by your browser id, namespaced per
+   notebook — see [Multiple notebooks](#multiple-notebooks)) and appends
+   a row to a `state_history` audit table.
 4. Reload the page in the same browser and your widgets come back
    exactly where you left them. Open it in a different browser or an
    incognito window and you get a brand-new, empty session — your data
@@ -109,29 +110,34 @@ deploying straight from this repo.
 
 ## Multiple notebooks
 
-`tip_calculator.py` is here to demonstrate this: drop another `.py`
-notebook into this directory and it's exported automatically alongside
-`notebook.py` — see the root template's
+`temperature_converter.py` is here to demonstrate this: drop another
+`.py` notebook into this directory and it's exported automatically
+alongside `notebook.py` — see the root template's
 [Multiple notebooks](../../README.md#multiple-notebooks) section for how
 `export_notebooks.py` discovers and builds them, and why more than one
 notebook gets a plain links page instead of in-app navigation (marimo
 has none, for WASM exports).
 
-`tip_calculator.py` deliberately doesn't use `session_state.py` or
-`api.py` at all — notebooks here don't have to share the persistence
-backend to coexist in the same deployment. The ones that do (just
-`notebook.py`, for now) share the same `api.py` bridge and Postgres
-service — state is keyed by the random per-browser id in `localStorage`,
-not by notebook, so nothing extra needs wiring up per notebook.
+It's the same [`temperature_converter.py`](../../temperature_converter.py)
+as the root template's second example, but wired up to `session_state.py`
+so it persists too — this directory's whole point is persistence, so its
+second notebook shows the same load/save pattern as `notebook.py` rather
+than skipping it. Both notebooks share the same `api.py` bridge and
+Postgres service; since `app_state` is keyed by whatever string it's
+given and both notebooks share one browser session id, each calls
+`session_state.notebook_key(session_id, namespace)` with its own
+namespace (`"favorites"`, `"temperature"`) so they don't overwrite each
+other's saved data. A notebook that doesn't need persistence at all
+doesn't have to call any of this — see the root template's version of
+this same notebook for that.
 
 ## Files
 
 - `notebook.py` — the marimo notebook, exported to WASM. Just the
   widgets and narrative; calls into `session_state.py` to load/save state.
-- `tip_calculator.py` — a second, unrelated notebook with no Postgres
-  dependency, here to demo [Multiple notebooks](#multiple-notebooks)
-  above rather than to be useful on its own. Delete it if you only want
-  the one notebook.
+- `temperature_converter.py` — a second, minimal persistence example
+  (one widget, no history table) — see
+  [Multiple notebooks](#multiple-notebooks) above.
 - `session_state.py` — the session id and the `api.py` client calls,
   kept separate from the notebook rather than written inside it. marimo
   bundles it into the WASM export automatically as a local dependency.

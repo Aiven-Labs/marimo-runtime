@@ -36,6 +36,21 @@ def get_or_create_session_id() -> str:
     return os.environ.get("MARIMO_LOCAL_SESSION_ID", "local-preview")
 
 
+def notebook_key(session_id: str, namespace: str) -> str:
+    """A storage key unique to both this browser *and* this notebook.
+
+    `session_id` identifies the browser, not any one notebook -- if more
+    than one notebook in this directory persists state, they all share
+    that same session id. Without a per-notebook `namespace`, two
+    notebooks calling `load_state`/`save_state` with the bare session id
+    would read and overwrite each other's data in `app_state`, since
+    api.py only keys on whatever string it's given. Give each notebook
+    that persists state its own namespace (e.g. "favorites",
+    "temperature") to keep them apart.
+    """
+    return f"{session_id}:{namespace}"
+
+
 async def _api_get(path: str):
     if IN_BROWSER:
         import pyodide.http
@@ -72,10 +87,15 @@ async def _api_post(path: str, payload: dict):
         return json.load(resp)
 
 
-async def load_state(session_id: str, default: dict) -> dict:
-    """The one and only load from Postgres, meant to run at notebook startup."""
+async def load_state(key: str, default: dict) -> dict:
+    """The one and only load from Postgres, meant to run at notebook startup.
+
+    `key` is whatever string identifies this notebook's state to api.py --
+    use `notebook_key(session_id, namespace)`, not the bare session id, if
+    more than one notebook persists state (see `notebook_key`).
+    """
     try:
-        response = await _api_get(f"/api/state/{session_id}")
+        response = await _api_get(f"/api/state/{key}")
         return response.get("value") or default
     except Exception:
         # API not reachable (e.g. this local preview isn't running api.py
@@ -83,19 +103,19 @@ async def load_state(session_id: str, default: dict) -> dict:
         return default
 
 
-async def save_state(session_id: str, value: dict) -> str:
-    """Persist `value` for `session_id`; returns a human-readable status."""
+async def save_state(key: str, value: dict) -> str:
+    """Persist `value` under `key`; returns a human-readable status."""
     try:
-        await _api_post(f"/api/state/{session_id}", {"value": value})
+        await _api_post(f"/api/state/{key}", {"value": value})
         return "Saved to Postgres"
     except Exception as exc:
         return f"Not saved -- API unreachable ({exc})"
 
 
-async def load_history(session_id: str) -> list:
-    """Most recent saved values for `session_id`, newest first."""
+async def load_history(key: str) -> list:
+    """Most recent saved values under `key`, newest first."""
     try:
-        response = await _api_get(f"/api/history/{session_id}")
+        response = await _api_get(f"/api/history/{key}")
         return response.get("history", [])
     except Exception:
         return []

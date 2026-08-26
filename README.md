@@ -31,7 +31,9 @@ files. Each visitor's browser then runs its own [Pyodide](https://pyodide.org)
 - `notebook.py` — a placeholder marimo notebook. Replace it with your own.
 - `temperature_converter.py` — a second, unrelated notebook, here to
   demo [Multiple notebooks](#multiple-notebooks) below rather than to be
-  useful on its own. Delete it if you only want the one notebook.
+  useful on its own. Delete it if you only want the one notebook. The
+  same notebook also appears in `examples/postgres-persistence/`, wired
+  up to persist there — this copy is the same thing without a backend.
 - `export_notebooks.py` — finds every notebook in this directory and
   exports each to WASM at build time; see below.
 - `Dockerfile` — runs `export_notebooks.py` at build time, then a

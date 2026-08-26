@@ -18,11 +18,12 @@ COPY *.py .
 # export_notebooks.py exports every *.py notebook sitting in this
 # directory -- drop in more notebook files and they're picked up
 # automatically, each getting its own WASM build plus a plain links page
-# to move between them. All of them share this same api.py bridge and
-# Postgres service (state is keyed by a random per-browser id, not by
-# notebook), so no extra wiring is needed per notebook -- though a
-# notebook doesn't have to use session_state.py at all (see
-# tip_calculator.py).
+# to move between them. Notebooks that persist state (notebook.py,
+# temperature_converter.py) share this same api.py bridge and Postgres
+# service, each under its own session_state.notebook_key() namespace so
+# they don't overwrite each other's saved data -- see session_state.py.
+# A notebook dropped in here doesn't have to persist anything at all;
+# nothing about the export requires it.
 RUN python export_notebooks.py
 
 # Runtime stage needs both nginx (serving the static WASM site) and Python

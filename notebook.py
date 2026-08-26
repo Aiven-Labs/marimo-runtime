@@ -16,15 +16,10 @@ def __(mo):
         """
         # 👋 Welcome to your marimo notebook
 
-        This is a placeholder. It's here to prove the round trip works:
-        **fork this repo → deploy it → get an interactive notebook running
-        in the cloud** on Aiven Runtimes.
-
+        This is a placeholder! 
+        
         Delete these cells and write your own notebook, or drop in an
         existing one (see the README for converting a Jupyter `.ipynb`).
-        The slider below is just here to show that marimo's reactivity —
-        cells rerunning automatically when their inputs change — works
-        out of the box once deployed.
         """
     )
     return
@@ -48,7 +43,7 @@ def __(mo):
     mo.md(
         """
         ---
-        This is your own private, editable copy — nothing you change here
+        *This is your own private, editable copy of this notebook!* Nothing you change here
         affects anyone else. Get the template that made it:
         [github.com/Aiven-Labs/marimo-runtime](https://github.com/Aiven-Labs/marimo-runtime).
         """

@@ -1,7 +1,7 @@
 # marimo-runtime
 
 Fork this, deploy it, get your own interactive [marimo](https://marimo.io)
-notebook running in the cloud on **Aiven Runtimes** — no database, no
+notebook running in the cloud on **Aiven Runtimes**. No database, no
 extra services required, and every visitor gets their own private,
 editable copy of the notebook.
 
@@ -11,19 +11,20 @@ The `Dockerfile` doesn't run a marimo server. Instead it exports
 `notebook.py` to a self-contained WASM build (`marimo export html-wasm
 --mode edit`) at image-build time, and serves the resulting static
 files. Each visitor's browser then runs its own [Pyodide](https://pyodide.org)
-(Python-in-WebAssembly) instance locally:
+(Python-in-WebAssembly) instance locally, meaning:
 
 - No shared server-side kernel, so visitors can't see or overwrite
-  each other's edits — everyone gets an independent copy of the notebook.
+  each other's edits *everyone gets an independent copy of the notebook*.
 - No arbitrary code ever runs on the container itself, since all
   execution happens client-side in the visitor's own browser sandbox.
   There's no token/password to manage as a result.
-- Trade-offs: the container serves tens of MB of Pyodide/WASM assets on
-  first load (nginx gzips these in flight — see below — but it's still
-  a real download), Pyodide supports most but not all PyPI packages
+- The container serves tens of MB of Pyodide/WASM assets on
+  first load which can be a little slow (nginx gzips these in flight but it's still
+  a real download).
+- Pyodide supports most but not all PyPI packages
   (see the [Pyodide package list](https://pyodide.org/en/stable/usage/packages-in-pyodide.html)),
-  and nothing a visitor edits is persisted anywhere — closing the tab
-  loses their changes, by design (their copy, their session).
+- Nothing a visitor edits is persisted anywhere so closing the tab
+  loses their changes, see examples for how Postgres can be used to persist user sessions.
 
 ## What's here
 
@@ -32,8 +33,7 @@ files. Each visitor's browser then runs its own [Pyodide](https://pyodide.org)
   second stage serves the static output with nginx.
 - `nginx.conf` — gzip and long-lived caching for the content-hashed
   asset files, so the (large) first load is smaller and repeat visits
-  are near-instant. Plain `python -m http.server` does neither, which
-  makes the difference between an okay first load and a very slow one.
+  are near-instant.
 - `requirements.txt` — just `marimo` (only needed to run the export).
 
 That's the whole template. `examples/` has more involved variants (see

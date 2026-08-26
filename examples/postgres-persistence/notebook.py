@@ -4,7 +4,7 @@ __generated_with = "0.9.0"
 app = marimo.App(width="medium", app_title="marimo + Aiven for PostgreSQL")
 
 
-@app.cell
+@app.cell(hide_code=True)
 def __():
     import marimo as mo
     import sys
@@ -39,7 +39,7 @@ def __(mo):
     return
 
 
-@app.cell
+@app.cell(hide_code=True)
 def __(IN_BROWSER, os, uuid):
     if IN_BROWSER:
         import js
@@ -55,7 +55,7 @@ def __(IN_BROWSER, os, uuid):
     return (session_id,)
 
 
-@app.cell
+@app.cell(hide_code=True)
 def __(IN_BROWSER, json):
     # Pyodide can't open a raw TCP socket, so the notebook never talks to
     # Postgres directly -- it calls this same container's bundled API over
@@ -101,7 +101,7 @@ def __(IN_BROWSER, json):
     return api_get, api_post
 
 
-@app.cell
+@app.cell(hide_code=True)
 async def __(api_get, session_id):
     # The one and only load from Postgres, at notebook startup.
     _default = {
@@ -139,7 +139,7 @@ def __(mo, saved_state):
     return favorite_color, favorite_number, subscribe_updates, visitor_name
 
 
-@app.cell
+@app.cell(hide_code=True)
 async def __(
     api_post,
     favorite_color,
@@ -168,7 +168,7 @@ async def __(
     return current_value, save_status
 
 
-@app.cell
+@app.cell(hide_code=True)
 async def __(api_get, mo, save_status, session_id):
     # Depends on save_status purely so this cell reruns after each save
     # above and shows the freshest history straight from the database.

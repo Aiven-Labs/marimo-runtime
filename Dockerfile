@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM python:3.11-slim AS export
 
 WORKDIR /app
 
@@ -18,6 +18,16 @@ COPY notebook.py .
 # edits, and no arbitrary code ever executes on this container.
 RUN marimo export html-wasm notebook.py -o /site --mode edit -f
 
+# Serve with nginx instead of Python's http.server: the exported bundle
+# is tens of MB of mostly-text assets (the editor UI plus the Pyodide
+# runtime), and http.server never compresses anything, which makes
+# first load painfully slow. nginx gzips on the fly and long-caches the
+# content-hashed asset files.
+FROM nginx:alpine
+
+COPY --from=export /site /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 8080
 
-CMD ["python", "-m", "http.server", "8080", "--directory", "/site"]
+CMD ["nginx", "-g", "daemon off;"]

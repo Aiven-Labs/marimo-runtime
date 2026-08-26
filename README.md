@@ -18,17 +18,22 @@ files. Each visitor's browser then runs its own [Pyodide](https://pyodide.org)
 - No arbitrary code ever runs on the container itself, since all
   execution happens client-side in the visitor's own browser sandbox.
   There's no token/password to manage as a result.
-- Trade-offs: the container serves ~30MB of Pyodide/WASM assets on
-  first load, Pyodide supports most but not all PyPI packages (see the
-  [Pyodide package list](https://pyodide.org/en/stable/usage/packages-in-pyodide.html)),
+- Trade-offs: the container serves tens of MB of Pyodide/WASM assets on
+  first load (nginx gzips these in flight — see below — but it's still
+  a real download), Pyodide supports most but not all PyPI packages
+  (see the [Pyodide package list](https://pyodide.org/en/stable/usage/packages-in-pyodide.html)),
   and nothing a visitor edits is persisted anywhere — closing the tab
   loses their changes, by design (their copy, their session).
 
 ## What's here
 
 - `notebook.py` — a placeholder marimo notebook. Replace it with your own.
-- `Dockerfile` — exports `notebook.py` to WASM at build time and serves
-  it as static files.
+- `Dockerfile` — exports `notebook.py` to WASM at build time, then a
+  second stage serves the static output with nginx.
+- `nginx.conf` — gzip and long-lived caching for the content-hashed
+  asset files, so the (large) first load is smaller and repeat visits
+  are near-instant. Plain `python -m http.server` does neither, which
+  makes the difference between an okay first load and a very slow one.
 - `requirements.txt` — just `marimo` (only needed to run the export).
 
 That's the whole template. `examples/` has more involved variants (see

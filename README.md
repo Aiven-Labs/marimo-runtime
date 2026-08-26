@@ -2,14 +2,34 @@
 
 Fork this, deploy it, get your own interactive [marimo](https://marimo.io)
 notebook running in the cloud on **Aiven Runtimes** — no database, no
-extra services required.
+extra services required, and every visitor gets their own private,
+editable copy of the notebook.
+
+## How the per-visitor isolation works
+
+The `Dockerfile` doesn't run a marimo server. Instead it exports
+`notebook.py` to a self-contained WASM build (`marimo export html-wasm
+--mode edit`) at image-build time, and serves the resulting static
+files. Each visitor's browser then runs its own [Pyodide](https://pyodide.org)
+(Python-in-WebAssembly) instance locally:
+
+- No shared server-side kernel, so visitors can't see or overwrite
+  each other's edits — everyone gets an independent copy of the notebook.
+- No arbitrary code ever runs on the container itself, since all
+  execution happens client-side in the visitor's own browser sandbox.
+  There's no token/password to manage as a result.
+- Trade-offs: the container serves ~30MB of Pyodide/WASM assets on
+  first load, Pyodide supports most but not all PyPI packages (see the
+  [Pyodide package list](https://pyodide.org/en/stable/usage/packages-in-pyodide.html)),
+  and nothing a visitor edits is persisted anywhere — closing the tab
+  loses their changes, by design (their copy, their session).
 
 ## What's here
 
 - `notebook.py` — a placeholder marimo notebook. Replace it with your own.
-- `Dockerfile` — builds and serves it with `marimo edit`, gated behind a
-  token password.
-- `requirements.txt` — just `marimo`.
+- `Dockerfile` — exports `notebook.py` to WASM at build time and serves
+  it as static files.
+- `requirements.txt` — just `marimo` (only needed to run the export).
 
 That's the whole template. `examples/` has more involved variants (see
 below).
@@ -35,9 +55,19 @@ afterward. `marimo edit notebook.py` locally is the fastest way to check.
 
 ## Run it locally
 
+As a normal server-backed notebook, for fast iteration while you build:
+
 ```bash
 pip install -r requirements.txt
 marimo edit notebook.py
+```
+
+To preview exactly what visitors will get (the WASM build):
+
+```bash
+marimo export html-wasm notebook.py -o /tmp/site --mode edit
+python -m http.server 8080 --directory /tmp/site
+# open http://localhost:8080
 ```
 
 ## Deploy it on Aiven Runtimes
@@ -49,15 +79,15 @@ straight from your fork:
    **Aiven Console → your project → Integrations → GitHub** if private).
 2. Create the application service — plan `free-10-256` is enough for a
    single notebook — pointing at your repo/branch, port `8080`.
-3. Set an environment variable `MARIMO_TOKEN_PASSWORD` (as a secret) —
-   this is the password required to open the notebook, since editable
-   mode allows running arbitrary code for anyone who reaches the URL.
 
-No database or other service integration needed for this template.
+No environment variables, database, or other service integration needed
+for this template.
 
 ## Other examples
 
-- `examples/postgres-persistence/` — the same idea, but the notebook's
-  widget state and a change history are persisted to a real
-  **Aiven for PostgreSQL** service instead of only living in memory.
-  Useful if you want your notebook's state to survive restarts.
+- `examples/postgres-persistence/` — a single shared, server-backed
+  notebook (via `marimo edit`/`marimo run`, not WASM) whose widget state
+  and change history persist to a real **Aiven for PostgreSQL** service.
+  Unlike the root template, all visitors share one notebook instance —
+  useful if you want state to survive restarts rather than isolating
+  each visitor.

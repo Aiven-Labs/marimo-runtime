@@ -19,6 +19,7 @@ own multi-notebook deployment guide recommends.
 
 import pathlib
 import re
+import shutil
 import subprocess
 import sys
 
@@ -63,6 +64,28 @@ def export_one(path: pathlib.Path, out_dir: pathlib.Path) -> None:
         ],
         check=True,
     )
+
+
+def copy_wheels_to_root(notebook_dir: pathlib.Path, site: pathlib.Path) -> None:
+    """Copy this notebook's local-module wheels up to the site root too.
+
+    marimo bundles a notebook-local import (like session_state.py) into a
+    wheel and references it with a relative URL that gets resolved in the
+    browser, not baked in at build time. In this nested multi-notebook
+    layout that relative reference has been observed to resolve one
+    directory level higher than intended -- landing on the site root
+    instead of this notebook's own subdirectory. Having the wheel exist
+    at both places means that wrong resolution still finds the real file
+    instead of 404ing -- see nginx.conf's /public/ location for the other
+    half of this belt-and-suspenders fix.
+    """
+    wheels_dir = notebook_dir / "public" / "wheels"
+    if not wheels_dir.is_dir():
+        return
+    root_wheels_dir = site / "public" / "wheels"
+    root_wheels_dir.mkdir(parents=True, exist_ok=True)
+    for wheel in wheels_dir.glob("*.whl"):
+        shutil.copy2(wheel, root_wheels_dir / wheel.name)
 
 
 def write_index(notebooks: list[pathlib.Path], site: pathlib.Path) -> None:
@@ -119,7 +142,9 @@ def main() -> None:
         return
 
     for notebook in notebooks:
-        export_one(notebook, site / slug_for(notebook))
+        out_dir = site / slug_for(notebook)
+        export_one(notebook, out_dir)
+        copy_wheels_to_root(out_dir, site)
     write_index(notebooks, site)
 
 

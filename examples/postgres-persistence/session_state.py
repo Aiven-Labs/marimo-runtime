@@ -47,8 +47,13 @@ def notebook_key(session_id: str, namespace: str) -> str:
     api.py only keys on whatever string it's given. Give each notebook
     that persists state its own namespace (e.g. "favorites",
     "temperature") to keep them apart.
+
+    Joined with "__" rather than ":" -- api.py's PATH_RE only accepts
+    `[A-Za-z0-9_-]` in the URL path segment, and a literal colon in the
+    key would make every /api/state/<key> and /api/history/<key> request
+    404 before it ever reached Postgres.
     """
-    return f"{session_id}:{namespace}"
+    return f"{session_id}__{namespace}"
 
 
 async def _api_get(path: str):

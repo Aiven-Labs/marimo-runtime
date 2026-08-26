@@ -81,6 +81,15 @@ subdirectory (e.g. `/second-notebook/`) and the site root becomes a
 plain, static links page — the same pattern marimo's own multi-notebook
 deployment guide recommends, not a custom router.
 
+If a notebook you drop in imports a local module of its own (like
+`examples/postgres-persistence/session_state.py`), marimo bundles it
+into a wheel and references it with a relative URL resolved in the
+browser rather than at build time — nested a directory deep, that
+resolution has been observed to land one level too high. `nginx.conf`'s
+`/public/` location and `export_notebooks.py`'s wheel-copying-to-root
+step both guard against that; see the postgres-persistence example,
+which actually hits this, for the fuller explanation.
+
 ## Run it locally
 
 As a normal server-backed notebook, for fast iteration while you build:

@@ -127,6 +127,66 @@ async def __(mo, save_status, state_key):
 
 
 @app.cell(hide_code=True)
+def __(session_id):
+    from session_state import notebook_key as _notebook_key
+
+    # A second, independent piece of persisted state alongside the four
+    # widgets above -- same load/save mechanism, its own namespace.
+    scratchpad_key = _notebook_key(session_id, "scratchpad")
+    return (scratchpad_key,)
+
+
+@app.cell(hide_code=True)
+async def __(scratchpad_key):
+    from session_state import load_state as _load_scratchpad
+
+    saved_scratchpad = await _load_scratchpad(
+        scratchpad_key, {"code": "# jot anything here -- it'll be here on reload\n"}
+    )
+    return (saved_scratchpad,)
+
+
+@app.cell
+def __(mo, saved_scratchpad):
+    scratchpad = mo.ui.code_editor(
+        value=saved_scratchpad["code"],
+        language="python",
+        label="Your scratchpad -- persists across reloads, in this browser",
+        min_height=120,
+    )
+    scratchpad
+    return (scratchpad,)
+
+
+@app.cell(hide_code=True)
+async def __(scratchpad, scratchpad_key):
+    from session_state import save_state as _save_scratchpad
+
+    # Reruns whenever the editor's content changes (marimo's reactive
+    # execution), same as the widgets' save cell above.
+    scratchpad_save_status = await _save_scratchpad(scratchpad_key, {"code": scratchpad.value})
+    return (scratchpad_save_status,)
+
+
+@app.cell(hide_code=True)
+def __(mo, scratchpad_save_status):
+    mo.md(
+        f"""
+        **{scratchpad_save_status}**. This box's text is saved through the
+        same Postgres bridge as the widgets above, under its own
+        namespace -- reload the page and it comes back, same as they do.
+
+        It isn't this notebook's actual *source code*, though: a WASM
+        export has no way to read or write its own running cells from
+        inside a cell, so there's no supported way to persist edits to
+        `notebook.py` itself here. This is the closest equivalent -- a
+        plain string a visitor can edit and get back.
+        """
+    )
+    return
+
+
+@app.cell(hide_code=True)
 def __(mo, session_id):
     mo.md(
         f"""

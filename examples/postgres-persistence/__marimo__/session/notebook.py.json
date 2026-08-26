@@ -1,0 +1,178 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.24.0",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "11e34d1843ca23d525f51feed454a3c3",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1 id=\"marimo-with-your-own-private-and-saved-state\">marimo, with your own private <em>and</em> saved state</h1>\n<span class=\"paragraph\">This notebook exports to WASM like the root template -- your\nbrowser runs its own private Pyodide (Python-in-WebAssembly)\ninstance, so nobody else can see or touch your copy while you're\nediting it.</span>\n<span class=\"paragraph\">The difference: every widget change is also sent to a tiny API\nbundled into this same container, which writes it to a real\n<strong>Aiven for PostgreSQL</strong> service, keyed by a random id stored in\n<em>your</em> browser. Reload the page (same browser) and your widgets\ncome back exactly where you left them.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "95f4521712950e27c85cb553982d8793",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "26607dbe1ca55d4add412939b9d1f961",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "0eb1f8b2e53c0367ad6274f4fcdc1c1a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: row;justify-content: space-between;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><marimo-ui-element object-id='lEQa-0' random-id='15ad1642-7f22-62f7-add3-119c63ed9ead'><marimo-slider data-initial-value='5' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eFavorite number&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-start='0' data-stop='100' data-steps='[]' data-debounce='false' data-disabled='false' data-orientation='&quot;horizontal&quot;' data-show-value='false' data-include-input='false' data-full-width='false'></marimo-slider></marimo-ui-element><marimo-ui-element object-id='lEQa-1' random-id='1a86ff80-0c45-fadb-0f23-977199dcf47c'><marimo-dropdown data-initial-value='[&quot;Teal&quot;]' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eFavorite color&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-options='[&quot;Teal&quot;,&quot;Coral&quot;,&quot;Slate&quot;,&quot;Amber&quot;,&quot;Violet&quot;]' data-allow-select-none='false' data-searchable='false' data-full-width='false' data-disabled='false'></marimo-dropdown></marimo-ui-element><marimo-ui-element object-id='lEQa-2' random-id='dd238ff9-aabd-3b62-b024-a2ca0d1722da'><marimo-text data-initial-value='&quot;&quot;' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eYour name&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-placeholder='&quot;&quot;' data-kind='&quot;text&quot;' data-full-width='false' data-disabled='false' data-debounce='true'></marimo-text></marimo-ui-element><marimo-ui-element object-id='lEQa-3' random-id='3f0982a3-414e-d90c-e575-a73bbac93976'><marimo-checkbox data-initial-value='false' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eSubscribe to updates&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-disabled='false'></marimo-checkbox></marimo-ui-element></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "4e28d806835995a3cd2307fc83c30663",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Not saved -- API unreachable (<urlopen error [Errno 111] Connection refused>)</strong>: <code>{'favorite_number': 5, 'favorite_color': 'Teal', 'visitor_name': '', 'subscribe_updates': False}</code></span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Xref",
+      "code_hash": "cbb16929ee930ead695692da58df2594",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<div style='display: flex;flex: 1;flex-direction: column;justify-content: flex-start;align-items: normal;flex-wrap: nowrap;gap: 0.5rem'><span class=\"markdown prose dark:prose-invert contents\"><h3 id=\"your-change-history-read-back-from-postgres\">Your change history, read back from Postgres</h3></span><span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><em>(no history yet -- change a widget above)</em></span></span></div>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "052892977ad08827c6d416da7208f382",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "68f0e9937dbb4911e471e91a56721fe9",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "0806eaf3aad26a1bd7cf5129914fdd01",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='RGSE-0' random-id='4870de23-23ed-de33-413f-79b9a25dc69e'><marimo-code-editor data-initial-value='&quot;# jot anything here -- it&#x27;ll be here on reload&#92;n&quot;' data-label='&quot;&#92;u003cspan class=&#92;&quot;markdown prose dark:prose-invert contents&#92;&quot;&#92;u003e&#92;u003cspan class=&#92;&quot;paragraph&#92;&quot;&#92;u003eYour scratchpad -- persists across reloads, in this browser&#92;u003c/span&#92;u003e&#92;u003c/span&#92;u003e&quot;' data-language='&quot;python&quot;' data-placeholder='&quot;&quot;' data-disabled='false' data-min-height='120' data-show-copy-button='true' data-debounce='false'></marimo-code-editor></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "a630ec4c9e807af13273b13b26b7cb2c",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "fb493835596512de8cfb9585d182635e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><strong>Not saved -- API unreachable (<urlopen error [Errno 111] Connection refused>)</strong>. This box's text is saved through the\nsame Postgres bridge as the widgets above, under its own\nnamespace -- reload the page and it comes back, same as they do.</span>\n<span class=\"paragraph\">It isn't this notebook's actual <em>source code</em>, though: a WASM\nexport has no way to read or write its own running cells from\ninside a cell, so there's no supported way to persist edits to\n<code>notebook.py</code> itself here. This is the closest equivalent -- a\nplain string a visitor can edit and get back.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "8fa9593cfe95358a08e0379fe3133052",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><hr />\n<span class=\"paragraph\">You're identified as <code>local-pr\u2026</code>, a random id generated\non your first visit and stored in <em>this browser's</em> <code>localStorage</code> --\nno login involved. Reload this page in the same browser and it\ncomes back; open it in a different browser or an incognito window\nand you'll get a brand-new, empty session.</span>\n<span class=\"paragraph\">Get the template that made this:\n<a href=\"https://github.com/Aiven-Labs/marimo-runtime\" rel=\"noopener noreferrer\" target=\"_blank\">github.com/Aiven-Labs/marimo-runtime</a>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

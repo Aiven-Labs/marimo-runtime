@@ -29,6 +29,14 @@ On top of that:
    exactly where you left them. Open it in a different browser or an
    incognito window and you get a brand-new, empty session — your data
    is yours alone.
+5. A `mo.ui.code_editor` further down persists the same way, under its
+   own namespace — proof that this pattern isn't specific to sliders and
+   dropdowns. It saves that box's *text*, though, not this notebook's
+   own source: a WASM export has no way to read or write its own running
+   cells from inside a cell, so there's no supported way to save edits
+   to `notebook.py` itself back to anywhere. If what you want is your
+   own edits to the notebook surviving a reload, this is the closest
+   equivalent available.
 
 ## Why there's a bundled API
 
@@ -126,15 +134,27 @@ than skipping it. Both notebooks share the same `api.py` bridge and
 Postgres service; since `app_state` is keyed by whatever string it's
 given and both notebooks share one browser session id, each calls
 `session_state.notebook_key(session_id, namespace)` with its own
-namespace (`"favorites"`, `"temperature"`) so they don't overwrite each
-other's saved data. A notebook that doesn't need persistence at all
-doesn't have to call any of this — see the root template's version of
-this same notebook for that.
+namespace (`"favorites"`, `"temperature"`, and `notebook.py`'s scratchpad
+uses `"scratchpad"`) so they don't overwrite each other's saved data. A
+notebook that doesn't need persistence at all doesn't have to call any
+of this — see the root template's version of this same notebook for that.
+
+Multiple notebooks sharing one bridge is also why the two nginx configs
+have a `/public/` location and `export_notebooks.py` copies each
+notebook's wheel up to the site root: marimo resolves a local-module
+wheel's relative URL in the browser, not at build time, and a nested
+subdirectory layout has been observed to throw that resolution off by
+one directory level — landing on the site root instead of the
+notebook's own folder. Both fixes make that wrong guess still land on
+the real file (or a real 404) instead of nginx's SPA fallback silently
+serving `index.html`'s bytes in its place.
 
 ## Files
 
 - `notebook.py` — the marimo notebook, exported to WASM. Just the
-  widgets and narrative; calls into `session_state.py` to load/save state.
+  widgets and narrative; calls into `session_state.py` to load/save
+  state. Includes a persisted `mo.ui.code_editor` scratchpad alongside
+  the four widgets, showing the same pattern for free-form text.
 - `temperature_converter.py` — a second, minimal persistence example
   (one widget, no history table) — see
   [Multiple notebooks](#multiple-notebooks) above.

@@ -94,10 +94,25 @@ project for this integration type. Build path for the deploy needs to
 point here, e.g. `build_path: examples/postgres-persistence` if
 deploying straight from this repo.
 
+## Multiple notebooks
+
+Drop another `.py` notebook into this directory and it's exported
+automatically alongside `notebook.py` — see the root template's
+[Multiple notebooks](../../README.md#multiple-notebooks) section for how
+`export_notebooks.py` discovers and builds them, and why more than one
+notebook gets a plain links page instead of in-app navigation (marimo
+has none, for WASM exports).
+
+All notebooks here share this same `api.py` bridge and Postgres service
+— state is keyed by the random per-browser id in `localStorage`, not by
+notebook, so nothing extra needs wiring up per notebook.
+
 ## Files
 
 - `notebook.py` — the marimo notebook, exported to WASM. Generates the
   per-browser id and calls the bundled API to load/save state.
+- `export_notebooks.py` — finds every notebook in this directory and
+  exports each to WASM at build time (same script as the root template).
 - `api.py` — the internal API bridging Pyodide to Postgres.
 - `nginx.conf` — serves the static site and reverse-proxies `/api/` to
   `api.py`; same gzip/MIME setup as the root template's config.

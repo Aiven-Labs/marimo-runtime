@@ -28,8 +28,11 @@ files. Each visitor's browser then runs its own [Pyodide](https://pyodide.org)
 
 ## What's here
 
-- `notebook.py` — a placeholder marimo notebook. Replace it with your own.
-- `Dockerfile` — exports `notebook.py` to WASM at build time, then a
+- `notebook.py` — a placeholder marimo notebook. Replace it with your own,
+  or drop in more (see [Multiple notebooks](#multiple-notebooks)).
+- `export_notebooks.py` — finds every notebook in this directory and
+  exports each to WASM at build time; see below.
+- `Dockerfile` — runs `export_notebooks.py` at build time, then a
   second stage serves the static output with nginx.
 - `nginx.conf` — gzip and long-lived caching for the content-hashed
   asset files, so the (large) first load is smaller and repeat visits
@@ -58,6 +61,21 @@ model — the conversion handles the mechanical part, but notebooks that
 mutate the same variable across multiple cells may need small tweaks
 afterward. `marimo edit notebook.py` locally is the fastest way to check.
 
+## Multiple notebooks
+
+Drop another `.py` notebook into this directory (or `examples/postgres-persistence/`)
+and it's picked up automatically — `export_notebooks.py` finds every file
+that defines `marimo.App(...)`, no Dockerfile edit needed.
+
+marimo doesn't have a built-in way to navigate between separate WASM
+exports — each one is a fully self-contained Pyodide bundle with no
+shared runtime or file browser (that's a server-only feature of
+`marimo edit`). So: with exactly one notebook, this deploys exactly as
+before, straight at `/`. With more than one, each gets its own
+subdirectory (e.g. `/second-notebook/`) and the site root becomes a
+plain, static links page — the same pattern marimo's own multi-notebook
+deployment guide recommends, not a custom router.
+
 ## Run it locally
 
 As a normal server-backed notebook, for fast iteration while you build:
@@ -73,6 +91,16 @@ To preview exactly what visitors will get (the WASM build):
 marimo export html-wasm notebook.py -o /tmp/site --mode edit
 python -m http.server 8080 --directory /tmp/site
 # open http://localhost:8080
+```
+
+With more than one notebook in the directory, run `export_notebooks.py`
+instead — it reproduces exactly what the Dockerfile does, including the
+links page:
+
+```bash
+pip install marimo
+python export_notebooks.py /tmp/site
+python -m http.server 8080 --directory /tmp/site
 ```
 
 ## Deploy it on Aiven Runtimes

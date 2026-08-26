@@ -8,12 +8,20 @@ RUN pip install --no-cache-dir -r requirements.txt
 # the html-wasm export below -- not needed at runtime.
 RUN pip install --no-cache-dir uv
 
-COPY notebook.py .
+COPY notebook.py export_notebooks.py .
 
 # Same per-visitor WASM export as the root template: no shared server-side
-# kernel ever runs this notebook's Python, so nothing here can execute
+# kernel ever runs a notebook's Python, so nothing here can execute
 # arbitrary code against the database. Only api.py (below) touches Postgres.
-RUN marimo export html-wasm notebook.py -o /site --mode edit -f
+#
+# export_notebooks.py exports every *.py notebook sitting in this
+# directory (just notebook.py by default) -- drop in more notebook files
+# and they're picked up automatically, each getting its own WASM build
+# plus a plain links page to move between them. All of them share this
+# same api.py bridge and Postgres service (state is keyed by a random
+# per-browser id, not by notebook), so no extra wiring is needed per
+# notebook.
+RUN python export_notebooks.py
 
 # Runtime stage needs both nginx (serving the static WASM site) and Python
 # (running the small state API) in one image, so this stays on

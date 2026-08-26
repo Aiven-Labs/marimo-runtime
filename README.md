@@ -24,16 +24,15 @@ files. Each visitor's browser then runs its own [Pyodide](https://pyodide.org)
 - Pyodide supports most but not all PyPI packages
   (see the [Pyodide package list](https://pyodide.org/en/stable/usage/packages-in-pyodide.html)),
 - Nothing a visitor edits is persisted anywhere so closing the tab
-  loses their changes, see examples for how Postgres can be used to persist user sessions.
+  loses their changes -- see `examples/shared-server/` for the opposite
+  trade-off, where edits are real and shared, at the cost of isolation.
 
 ## What's here
 
 - `notebook.py` — a placeholder marimo notebook. Replace it with your own.
 - `temperature_converter.py` — a second, unrelated notebook, here to
   demo [Multiple notebooks](#multiple-notebooks) below rather than to be
-  useful on its own. Delete it if you only want the one notebook. The
-  same notebook also appears in `examples/postgres-persistence/`, wired
-  up to persist there — this copy is the same thing without a backend.
+  useful on its own. Delete it if you only want the one notebook.
 - `export_notebooks.py` — finds every notebook in this directory and
   exports each to WASM at build time; see below.
 - `Dockerfile` — runs `export_notebooks.py` at build time, then a
@@ -68,9 +67,9 @@ afterward. `marimo edit notebook.py` locally is the fastest way to check.
 ## Multiple notebooks
 
 `temperature_converter.py` is here to demonstrate this: drop another
-`.py` notebook into this directory (or `examples/postgres-persistence/`)
-and it's picked up automatically — `export_notebooks.py` finds every
-file that defines `marimo.App(...)`, no Dockerfile edit needed.
+`.py` notebook into this directory and it's picked up automatically —
+`export_notebooks.py` finds every file that defines `marimo.App(...)`,
+no Dockerfile edit needed.
 
 marimo doesn't have a built-in way to navigate between separate WASM
 exports — each one is a fully self-contained Pyodide bundle with no
@@ -81,14 +80,14 @@ subdirectory (e.g. `/second-notebook/`) and the site root becomes a
 plain, static links page — the same pattern marimo's own multi-notebook
 deployment guide recommends, not a custom router.
 
-If a notebook you drop in imports a local module of its own (like
-`examples/postgres-persistence/session_state.py`), marimo bundles it
-into a wheel and references it with a relative URL resolved in the
-browser rather than at build time — nested a directory deep, that
-resolution has been observed to land one level too high. `nginx.conf`'s
-`/public/` location and `export_notebooks.py`'s wheel-copying-to-root
-step both guard against that; see the postgres-persistence example,
-which actually hits this, for the fuller explanation.
+If a notebook you drop in imports a local module of its own, marimo
+bundles it into a wheel and references it with a relative URL resolved
+in the browser rather than at build time — nested a directory deep,
+that resolution has been observed to land one level too high (a real
+issue hit while building an earlier version of this template, no
+longer part of it). `nginx.conf`'s `/public/` location and
+`export_notebooks.py`'s wheel-copying-to-root step both guard against
+that if it comes up for you.
 
 ## Run it locally
 
@@ -132,9 +131,10 @@ for this template.
 
 ## Other examples
 
-- `examples/postgres-persistence/` — same per-visitor WASM isolation as
-  this root template, plus real persistence: each visitor's widgets are
-  saved to a real **Aiven for PostgreSQL** service, keyed by an
-  anonymous id stored in their browser, and reload exactly where they
-  left off. A tiny bundled API bridges the browser-side notebook to
-  Postgres (Pyodide can't open a raw database connection itself).
+- `examples/shared-server/` — the opposite trade-off from this root
+  template: a real `marimo edit` server instead of a WASM export, so
+  saving is native (`Ctrl+S` writes straight to `notebook.py`) and
+  changes are genuinely shared between everyone connected, at the cost
+  of per-visitor isolation and a sandbox -- anyone with the password can
+  run arbitrary code in that container. See its README before deploying
+  it anywhere real.
